@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>PLAY HUB</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;600;800&display=swap" rel="stylesheet">
+<script src="hub-user.js"></script>
+<style>
+:root{
+  --bg:#17171b; --bg2:#202027; --bg3:#2a2a33; --line:#33333d;
+  --tx:#ecebe7; --tx2:#9c9aa3; --acc:#f2b53a; --acc-tx:#1d1500;
+  --r:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--bg);color:var(--tx);font-family:'Noto Sans KR',system-ui,sans-serif}
+body{min-height:100vh;padding-bottom:calc(30px + env(safe-area-inset-bottom))}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+
+/* 상단바 */
+.top{position:sticky;top:0;z-index:20;background:rgba(23,23,27,.92);backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line);padding:calc(10px + env(safe-area-inset-top)) 16px 10px;
+  display:flex;align-items:center;gap:10px}
+.logo{font-family:'Black Han Sans';font-size:24px;letter-spacing:.5px;line-height:1}
+.logo b{color:var(--acc);font-weight:400}
+.me{margin-left:auto;display:flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--line);
+  padding:6px 12px 6px 6px;border-radius:999px;max-width:60%}
+.me .dot{width:26px;height:26px;border-radius:50%;background:var(--acc);color:var(--acc-tx);
+  display:grid;place-items:center;font-weight:800;font-size:13px;flex:none}
+.me span{font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.wrap{max-width:980px;margin:0 auto;padding:0 16px}
+
+/* 검색 + 장르 */
+.search{margin-top:14px;display:flex;align-items:center;gap:8px;background:var(--bg2);border:1px solid var(--line);
+  border-radius:12px;padding:0 12px}
+.search input{flex:1;background:none;border:0;outline:none;color:var(--tx);font-size:15px;padding:12px 0;font-family:inherit}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:12px 0 2px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;padding:7px 14px;border-radius:999px;background:var(--bg2);border:1px solid var(--line);
+  font-size:13px;font-weight:600;color:var(--tx2)}
+.chip.on{background:var(--tx);color:var(--bg);border-color:var(--tx)}
+
+h2{font-family:'Black Han Sans';font-weight:400;font-size:19px;margin:22px 0 10px;display:flex;align-items:baseline;gap:8px}
+h2 small{font-family:'Noto Sans KR';font-size:12px;color:var(--tx2);font-weight:600}
+
+/* 게임 카드 */
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+@media(min-width:560px){.grid{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:820px){.grid{grid-template-columns:repeat(4,1fr)}}
+.row{display:flex;gap:12px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px}
+.row::-webkit-scrollbar{display:none}
+.row .card{width:132px;flex:none}
+
+.card{display:block;text-align:left;width:100%}
+.thumb{position:relative;aspect-ratio:1;border-radius:var(--r);overflow:hidden;background:var(--c1);
+  border-bottom:5px solid var(--c2);transition:transform .15s}
+.card:active .thumb{transform:scale(.96)}
+@media(hover:hover){.card:hover .thumb{transform:translateY(-3px)}}
+.thumb::before{content:"";position:absolute;inset:0;background:var(--pat)}
+.thumb .big{position:absolute;left:10px;right:10px;bottom:10px;font-family:'Black Han Sans';
+  font-size:clamp(20px,6vw,30px);line-height:1;color:var(--fg);word-break:keep-all;
+  text-shadow:0 2px 0 rgba(0,0,0,.18)}
+.thumb .tag{position:absolute;top:9px;left:9px;font-size:10.5px;font-weight:800;letter-spacing:.3px;
+  padding:3px 7px;border:1.5px solid var(--fg);color:var(--fg);border-radius:5px;transform:rotate(-3deg);opacity:.85}
+.meta{padding:8px 2px 0}
+.meta .t{font-weight:800;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.meta .d{font-size:12px;color:var(--tx2);margin-top:2px;line-height:1.35;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.empty{color:var(--tx2);font-size:14px;padding:30px 0;text-align:center}
+
+/* 모달 */
+.ov{position:fixed;inset:0;z-index:50;background:rgba(8,8,10,.75);display:none;align-items:flex-end;justify-content:center}
+.ov.on{display:flex}
+@media(min-width:560px){.ov{align-items:center}}
+.sheet{background:var(--bg2);width:100%;max-width:420px;border-radius:18px 18px 0 0;padding:20px 18px calc(20px + env(safe-area-inset-bottom));
+  animation:up .22s ease-out}
+@media(min-width:560px){.sheet{border-radius:18px}}
+@keyframes up{from{transform:translateY(30px);opacity:0}}
+.sheet .thumb{aspect-ratio:16/9;margin-bottom:14px}
+.sheet h3{font-family:'Black Han Sans';font-weight:400;font-size:24px}
+.sheet p{color:var(--tx2);font-size:14px;line-height:1.55;margin-top:6px}
+.btn{display:block;width:100%;padding:14px;border-radius:12px;font-weight:800;font-size:16px;text-align:center;margin-top:16px}
+.btn.p{background:var(--acc);color:var(--acc-tx)}
+.btn.g{background:var(--bg3);margin-top:8px;font-size:14px;padding:12px}
+.field{width:100%;padding:13px;border-radius:10px;border:2px solid var(--line);background:var(--bg);color:var(--tx);
+  font-size:16px;outline:none;font-family:inherit;margin-top:14px}
+.field:focus{border-color:var(--acc)}
+.err{color:#ff7a6b;font-size:13px;min-height:18px;margin-top:6px}
+.note{font-size:12px;color:var(--tx2);margin-top:4px}
+.badge{display:inline-block;font-size:11px;font-weight:700;padding:3px 8px;border-radius:999px;margin-top:10px}
+.badge.on{background:#1f3b2a;color:#7fe0a3}.badge.off{background:var(--bg3);color:var(--tx2)}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="logo">PLAY<b>HUB</b></div>
+  <button class="me" id="meBtn"><div class="dot" id="meDot">?</div><span id="meName">이름 정하기</span></button>
+</header>
+
+<main class="wrap">
+  <label class="search">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9c9aa3" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+    <input id="q" placeholder="게임 검색" autocomplete="off">
+  </label>
+  <div class="chips" id="chips"></div>
+
+  <section id="recentSec" hidden>
+    <h2>최근 플레이</h2>
+    <div class="row" id="recent"></div>
+  </section>
+
+  <h2>전체 게임 <small id="count"></small></h2>
+  <div class="grid" id="grid"></div>
+</main>
+
+<!-- 게임 상세 -->
+<div class="ov" id="gameOv"><div class="sheet" id="gameSheet"></div></div>
+
+<!-- 유저네임 -->
+<div class="ov" id="nameOv">
+  <form class="sheet" id="nameForm">
+    <h3 id="nameTitle">유저네임 정하기</h3>
+    <p>아바타는 게임마다 다르고, 이 이름만 모든 게임에서 똑같이 쓰여요.</p>
+    <input class="field" id="nameInp" maxlength="12" autocomplete="off" placeholder="2~12자">
+    <div class="err" id="nameErr"></div>
+    <div class="note">한글 · 영문 · 숫자 · _ 사용 가능</div>
+    <span class="badge" id="syncBadge"></span>
+    <button class="btn p" id="nameOk">저장</button>
+    <button type="button" class="btn g" id="nameCancel">닫기</button>
+  </form>
+</div>
+
+<script>
+/* ================================================
+   게임 목록 — 여기만 고치면 허브가 바뀜
+   file: 같은 폴더의 html 파일명
+   ================================================ */
+const GAMES = [
+  { file:'twin-orbit.html', title:'트윈 오빗', genre:'리듬', desc:'두 행성을 박자에 맞춰 굴리는 궤도 리듬 게임 · 정확도로 친구와 대결', c:['#121733','#ff5b3a','#ffffff'] },
+];
+
+const GENRE_PAT = {
+  '리듬':   'repeating-linear-gradient(-45deg,rgba(255,255,255,.07) 0 10px,transparent 10px 22px)',
+  '액션':   'repeating-linear-gradient(90deg,rgba(0,0,0,.08) 0 3px,transparent 3px 14px)',
+  'RPG':    'radial-gradient(circle at 80% 15%,rgba(255,255,255,.18) 0 18%,transparent 19%)',
+  '전략':   'linear-gradient(45deg,rgba(255,255,255,.06) 25%,transparent 25% 75%,rgba(255,255,255,.06) 75%) 0 0/24px 24px',
+  '스포츠': 'radial-gradient(circle at 50% 120%,rgba(255,255,255,.14) 0 45%,transparent 46%)',
+  '아케이드':'radial-gradient(rgba(255,255,255,.14) 1.5px,transparent 1.6px) 0 0/12px 12px',
+};
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let genre = '전체', query = '';
+
+function thumbHTML(g, big){
+  const [c1,c2,fg] = g.c;
+  return `<div class="thumb" style="--c1:${c1};--c2:${c2};--fg:${fg};--pat:${GENRE_PAT[g.genre]||'none'}">
+    <span class="tag">${esc(g.genre)}</span>
+    <div class="big" ${big?'style="font-size:34px"':''}>${esc(g.title)}</div></div>`;
+}
+function cardHTML(g){
+  return `<button class="card" data-f="${esc(g.file)}">${thumbHTML(g)}
+    <div class="meta"><div class="t">${esc(g.title)}</div><div class="d">${esc(g.desc)}</div></div></button>`;
+}
+
+function renderChips(){
+  const gs = ['전체', ...new Set(GAMES.map(g=>g.genre))];
+  $('chips').innerHTML = gs.map(x=>`<button class="chip ${x===genre?'on':''}" data-g="${x}">${x}</button>`).join('');
+}
+function render(){
+  const q = query.trim().toLowerCase();
+  const list = GAMES.filter(g => (genre==='전체'||g.genre===genre) &&
+    (!q || (g.title+g.desc+g.file).toLowerCase().includes(q)));
+  $('grid').innerHTML = list.length ? list.map(cardHTML).join('') : '<div class="empty" style="grid-column:1/-1">찾는 게임이 없어요</div>';
+  $('count').textContent = list.length + '개';
+
+  const rec = HubUser.recent().map(f => GAMES.find(g=>g.file===f)).filter(Boolean);
+  $('recentSec').hidden = !rec.length || !!q || genre!=='전체';
+  $('recent').innerHTML = rec.map(cardHTML).join('');
+}
+
+/* 게임 상세 */
+function openGame(file){
+  const g = GAMES.find(x=>x.file===file); if(!g) return;
+  $('gameSheet').innerHTML = `${thumbHTML(g,true)}<h3>${esc(g.title)}</h3><p>${esc(g.desc)}</p>
+    <button class="btn p" id="playBtn">플레이</button><button class="btn g" id="closeG">닫기</button>`;
+  $('gameOv').classList.add('on');
+  $('playBtn').onclick = () => {
+    if(!HubUser.name()){ $('gameOv').classList.remove('on'); openName(() => openGame(file)); return; }
+    HubUser.track(g.file);
+    location.href = g.file;
+  };
+  $('closeG').onclick = () => $('gameOv').classList.remove('on');
+}
+
+/* 유저네임 */
+let afterName = null;
+function openName(cb){
+  afterName = cb || null;
+  const cur = HubUser.name();
+  $('nameTitle').textContent = cur ? '유저네임 바꾸기' : '유저네임 정하기';
+  $('nameInp').value = cur || '';
+  $('nameErr').textContent = '';
+  const b = $('syncBadge');
+  b.className = 'badge ' + (HubUser.online() ? 'on' : 'off');
+  b.textContent = HubUser.online() ? '● 온라인 — 이름 중복 검사 켜짐' : '이 기기에만 저장됨';
+  $('nameOv').classList.add('on');
+  setTimeout(()=>$('nameInp').focus(), 50);
+}
+$('nameForm').onsubmit = async e => {
+  e.preventDefault();
+  const btn = $('nameOk'); btn.disabled = true; btn.textContent = '확인 중…';
+  try{
+    await HubUser.setName($('nameInp').value);
+    $('nameOv').classList.remove('on');
+    const cb = afterName; afterName = null; cb && cb();
+  }catch(err){ $('nameErr').textContent = err.message; }
+  btn.disabled = false; btn.textContent = '저장';
+};
+$('nameCancel').onclick = () => { $('nameOv').classList.remove('on'); afterName = null; };
+
+function paintMe(){
+  const n = HubUser.name();
+  $('meName').textContent = n || '이름 정하기';
+  $('meDot').textContent = n ? n[0].toUpperCase() : '?';
+}
+HubUser.onChange(paintMe);
+
+/* 이벤트 */
+document.addEventListener('click', e => {
+  const c = e.target.closest('.card'); if(c){ openGame(c.dataset.f); return; }
+  const ch = e.target.closest('.chip'); if(ch){ genre = ch.dataset.g; renderChips(); render(); }
+});
+[$('gameOv'),$('nameOv')].forEach(o => o.addEventListener('click', e => { if(e.target===o) o.classList.remove('on'); }));
+$('q').addEventListener('input', e => { query = e.target.value; render(); });
+$('meBtn').onclick = () => openName();
+window.addEventListener('pageshow', render); // 뒤로가기로 돌아왔을 때 최근 목록 갱신
+
+paintMe(); renderChips(); render();
+if(!HubUser.name()) openName();
+else HubUser.firebase();
+</script>
+</body>
+</html>
